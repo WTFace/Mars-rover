@@ -1,6 +1,7 @@
 let store = {
     apod: '',
     rovers: ['Curiosity', 'Opportunity', 'Spirit'],
+    date: ''
 }
 
 // add our markup to the page
@@ -21,7 +22,7 @@ const App = (state) => {
     let { rovers, apod } = state
 
     return `
-        <header>${roverMenu(rovers)}</header>
+        <header><h1>Astronomy Picture of the Day</h1></header>
         <main>
             <section>                
                 ${ImageOfTheDay(apod)}
@@ -33,6 +34,9 @@ const App = (state) => {
 
 // listening for load event because page should load before any JS is called
 window.addEventListener('load', () => {
+    const today = new Date().toLocaleDateString().split('/')
+    store.date = `${today[2]}-${today[1]}-${today[0]}`
+
     render(root, store)
 })
 
@@ -49,14 +53,15 @@ const roverMenu = (rovers) => {
 // Example of a pure function that renders infomation requested from the backend
 const ImageOfTheDay = (apod) => {
     // If image does not already exist, or it is not from today -- request it again
-    const now = Date.now();
-
-    let yesterday = new Date(now - 24 * 3600 * 1000)
-    yesterday = `${yesterday.getFullYear()}-${yesterday.getMonth()+1}-${yesterday.getDate()}`
-
-    if (!apod || apod.image.code === 404) {
-        getImageOfTheDay(store, yesterday)
+    !apod && getImageOfTheDay(store);
+    
+    if (apod.image.code === 404 || apod.image.code === 400) {
+        const now = Date.now();
+        let yesterday = new Date(now - 24 * 3600 * 1000)
+        yesterday = `${yesterday.getFullYear()}-${yesterday.getMonth()+1}-${yesterday.getDate()}`
+        getImageOfTheDay(store, yesterday);
     }
+
     // check if the photo of the day is actually type video!
     if (apod.media_type === "video") {
         return (`
@@ -66,8 +71,8 @@ const ImageOfTheDay = (apod) => {
         `)
     } else {
         return (`
+            <h3>${apod.image.title}</h3>
             <img src="${apod.image.url}" height="350px" width="100%" />
-            <p>${apod.image.explanation}</p>
         `)
     }
 }
@@ -75,8 +80,8 @@ const ImageOfTheDay = (apod) => {
 // ------------------------------------------------------  API CALLS
 
 // Example API call
-const getImageOfTheDay = (state, date='today') => {
-    let { apod } = state
+const getImageOfTheDay = (state, yesterday) => {
+    const date = yesterday ? yesterday : state.date;
 
     fetch(`http://localhost:3000/apod/${date}`)
         .then(res => res.json())
