@@ -1,7 +1,9 @@
 let store = {
     apod: '',
+    date: '',
     rovers: ['Curiosity', 'Opportunity', 'Spirit'],
-    date: ''
+    selectedRover: 'Curiosity',
+    manifest: {},
 }
 
 const head = document.getElementById('head')
@@ -26,6 +28,7 @@ window.addEventListener('load', () => {
     const today = new Date().toLocaleDateString().split('/')
     store.date = `${today[2]}-${today[1]}-${today[0]}`
     render(head, ImageOfTheDay)
+    getManifest(store, 'Spirit');
 })
 
 // ------------------------------------------------------  COMPONENTS
@@ -74,6 +77,17 @@ const ImageOfTheDay = (state) => {
 }
 
 // ------------------------------------------------------  API CALLS
+const getManifest = (state, rover) => {
+    let { manifest } = state;
+    if (!manifest.hasOwnProperty(rover)) {
+        fetch(`http://localhost:3000/manifest/${rover.toLowerCase()}`)
+        .then(res => res.json())
+        .then(res => {
+            manifest[rover] = res;
+            updateStore(store, {manifest});
+        })
+    }
+}
 
 // Example API call
 const getImageOfTheDay = (state, yesterday) => {
