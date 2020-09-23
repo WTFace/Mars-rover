@@ -7,18 +7,14 @@ let store = {
 }
 
 const head = document.getElementById('head')
-// const rover = document.getElementById('rover')
+const rover = document.getElementById('rover')
 
 const updateStore = (store, newState) => {
     store = Object.assign(store, newState)
 }
-
 const render = async (dom, component) => {
     dom.innerHTML = App(component)
 }
-
-
-// create content
 const App = (component) => {
     return component(store)
 }
@@ -27,18 +23,24 @@ const App = (component) => {
 window.addEventListener('load', () => {
     const today = new Date().toLocaleDateString().split('/')
     store.date = `${today[2]}-${today[1]}-${today[0]}`
-    render(head, ImageOfTheDay)
+    render(head, ImageOfTheDay);
+    render(rover, roverMenu);
     getManifest(store, 'Spirit');
 })
 
 // ------------------------------------------------------  COMPONENTS
-// const roverMenu = (rovers) => {
-//     let elem = '';
-//     for(const r of rovers){
-//         elem += `<button class="">${r}</button>`
-//     }
-//     return elem
-// }
+
+const roverMenu = (state) => {
+    let elem = '';
+    const {selectedRover, rovers} = state;
+
+    for(const r of rovers){
+        let cls = '';
+        if (selectedRover === r) cls = 'active';
+        elem += `<button class="${cls}" onclick="selectRover('${r}')">${r}</button>`
+    }
+    return elem
+}
 
 
 // Example of a pure function
