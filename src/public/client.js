@@ -7,7 +7,7 @@ let store = {
 }
 
 const head = document.getElementById('head')
-const rover = document.getElementById('rover')
+const info = document.getElementById('info')
 
 const updateStore = (store, newState) => {
     store = Object.assign(store, newState)
@@ -24,12 +24,10 @@ window.addEventListener('load', () => {
     const today = new Date().toLocaleDateString().split('/')
     store.date = `${today[2]}-${today[1]}-${today[0]}`
     render(head, ImageOfTheDay);
-    render(rover, roverMenu);
-    getManifest(store, 'Spirit');
+    render(info, roverMenu);
 })
 
 // ------------------------------------------------------  COMPONENTS
-
 const roverMenu = (state) => {
     let elem = '';
     const {selectedRover, rovers} = state;
@@ -42,6 +40,28 @@ const roverMenu = (state) => {
     return elem
 }
 
+const selectRover = (rover) => {
+    const selectedRover = rover;
+    updateStore(store, {selectedRover});
+    render(info, roverMenu)
+    getManifest(store, rover);
+}
+const roverInfo = (state) =>{
+    const {manifest, selectedRover} = state;
+    !manifest.hasOwnProperty(selectedRover) && getManifest(state, selectedRover);
+    const _manifest = manifest[selectedRover];
+
+    let elem = roverMenu(state);
+    elem += `<div class="mission-manifest">
+        <div>name: ${_manifest.name}</div>
+        <div>launch date: ${_manifest.launch_date}</div>
+        <div>landing date: ${_manifest.landing_date}</div>
+        <div>last Earth date: ${_manifest.max_date}</div>
+        <div>last Martian sol: ${_manifest.max_sol}</div>
+        <div>mission status: ${_manifest.status}</div>
+    </div>`;
+    return elem;
+}
 
 // Example of a pure function
 const ImageOfTheDay = (state) => {
@@ -70,12 +90,8 @@ const ImageOfTheDay = (state) => {
             <img src="${apod.image.url}" height="350px" width="100%" />
         `
     }
-    return `
-        <section>
-            <h2>Astronomy Picture of the Day</h2>
-            ${apodSection}
-        </section>
-    `
+    return `<h2>Astronomy Picture of the Day</h2>
+            ${apodSection}`
 }
 
 // ------------------------------------------------------  API CALLS
@@ -87,7 +103,10 @@ const getManifest = (state, rover) => {
         .then(res => {
             manifest[rover] = res;
             updateStore(store, {manifest});
+            render(info, roverInfo);
         })
+    }else{
+        render(info, roverInfo);
     }
 }
 
