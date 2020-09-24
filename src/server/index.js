@@ -27,6 +27,17 @@ app.get('/manifest/:rover', async (req, res) => {
     }
 })
 
+app.get('/photos/:rover/:sol', async (req, res) => {
+    try {
+        const photos = await fetch(`https://api.nasa.gov/mars-photos/api/v1/rovers/${req.params.rover}/photos?sol=${req.params.sol}&api_key=${process.env.API_KEY}&page=1`)
+            .then(res => res.json())
+        
+        res.send(photos.photos)
+    } catch (err) {
+        console.log('error:', err);
+    }
+})
+
 // example API call
 app.get('/apod/:date', async (req, res) => {
     try {

@@ -4,10 +4,12 @@ let store = {
     rovers: ['Curiosity', 'Opportunity', 'Spirit'],
     selectedRover: 'Curiosity',
     manifest: {},
+    roverPhotos: {}
 }
 
 const head = document.getElementById('head')
 const info = document.getElementById('info')
+const photos = document.getElementById('photos')
 
 const updateStore = (store, newState) => {
     store = Object.assign(store, newState)
@@ -40,13 +42,7 @@ const roverMenu = (state) => {
     return elem
 }
 
-const selectRover = (rover) => {
-    const selectedRover = rover;
-    updateStore(store, {selectedRover});
-    render(info, roverMenu)
-    getManifest(store, rover);
-}
-const roverInfo = (state) =>{
+const RoverInfo = (state) =>{
     const {manifest, selectedRover} = state;
     !manifest.hasOwnProperty(selectedRover) && getManifest(state, selectedRover);
     const _manifest = manifest[selectedRover];
@@ -61,6 +57,18 @@ const roverInfo = (state) =>{
         <div>mission status: ${_manifest.status}</div>
     </div>`;
     return elem;
+}
+const RecentPhotos = (state) => {
+    const {roverPhotos, selectedRover} = state;
+    !roverPhotos.hasOwnProperty(selectedRover) && getRecentPhotos(state, selectedRover);
+
+    const _roverPhotos = roverPhotos[selectedRover];
+
+    let elem = '<div class="mission-manifest">';
+    for(const photo of _roverPhotos){
+        elem += `<div><h3>camera: ${photo.camera.full_name}</h3><img src="${photo.img_src}" alt="mars photo"></div>`;
+    }
+    return elem + '</div>';
 }
 
 // Example of a pure function
@@ -94,7 +102,13 @@ const ImageOfTheDay = (state) => {
             ${apodSection}`
 }
 
-// ------------------------------------------------------  API CALLS
+const selectRover = (rover) => {
+    const selectedRover = rover;
+    updateStore(store, {selectedRover});
+    render(info, roverMenu)
+    getManifest(store, rover);
+}
+
 const getManifest = (state, rover) => {
     let { manifest } = state;
     if (!manifest.hasOwnProperty(rover)) {
@@ -103,10 +117,28 @@ const getManifest = (state, rover) => {
         .then(res => {
             manifest[rover] = res;
             updateStore(store, {manifest});
-            render(info, roverInfo);
+            render(info, RoverInfo);
+            getRecentPhotos(store, rover);
         })
     }else{
-        render(info, roverInfo);
+        render(info, RoverInfo);
+        getRecentPhotos(store, rover);
+    }
+}
+const getRecentPhotos = (state, rover) => {
+    let { roverPhotos, manifest } = state;
+    const max_sol = manifest[rover].max_sol;
+
+    if (!roverPhotos.hasOwnProperty(rover)) {
+        fetch(`http://localhost:3000/photos/${rover.toLowerCase()}/${max_sol}`)
+        .then(res => res.json())
+        .then(res => {
+            roverPhotos[rover] = res;
+            updateStore(store, {roverPhotos});
+            render(photos, RecentPhotos);
+        })
+    }else{
+        render(photos, RecentPhotos);
     }
 }
 
