@@ -2,7 +2,7 @@ let store = {
     apod: '',
     date: '',
     rovers: ['Curiosity', 'Opportunity', 'Spirit'],
-    selectedRover: 'Curiosity',
+    selectedRover: '',
     manifest: {},
     roverPhotos: {}
 }
@@ -50,11 +50,11 @@ const RoverInfo = (state) =>{
     let elem = roverMenu(state);
     elem += `<div class="mission-manifest">
         <div>name: ${_manifest.name}</div>
-        <div>launch date: ${_manifest.launch_date}</div>
-        <div>landing date: ${_manifest.landing_date}</div>
-        <div>last Earth date: ${_manifest.max_date}</div>
-        <div>last Martian sol: ${_manifest.max_sol}</div>
         <div>mission status: ${_manifest.status}</div>
+        <div>launched: ${_manifest.launch_date}</div>
+        <div>landed: ${_manifest.landing_date}</div>
+        <div>last photo on: ${_manifest.max_date}</div>
+        <div>(sol: ${_manifest.max_sol})</div>
     </div>`;
     return elem;
 }
@@ -64,9 +64,9 @@ const RecentPhotos = (state) => {
 
     const _roverPhotos = roverPhotos[selectedRover];
 
-    let elem = '<div class="mission-manifest">';
+    let elem = '<div>';
     for(const photo of _roverPhotos){
-        elem += `<div><h3>camera: ${photo.camera.full_name}</h3><img src="${photo.img_src}" alt="mars photo"></div>`;
+        elem += `<div class="photo-wrap"><h3>camera: ${photo.camera.full_name}</h3><img src="${photo.img_src}" alt="mars photo"></div>`;
     }
     return elem + '</div>';
 }
@@ -95,7 +95,7 @@ const ImageOfTheDay = (state) => {
         apodSection = 
         `
             <h3>${apod.image.title}</h3>
-            <img src="${apod.image.url}" height="350px" width="100%" />
+            <img src="${apod.image.url}" />
         `
     }
     return `<h2>Astronomy Picture of the Day</h2>
